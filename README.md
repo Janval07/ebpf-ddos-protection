@@ -21,12 +21,12 @@ El programa en C utiliza un mapa `BPF_MAP_TYPE_LRU_HASH` para llevar el conteo d
 *   **Ejecución:** Se lanzó un ataque de 20 peticiones/segundo durante 15 segundos (300 peticiones totales).
 *   **Resultado:** Nginx procesó las primeras 69 peticiones. Fail2Ban leyó los logs, detectó el patrón, y aplicó una regla en `iptables` bloqueando la IP. El script terminó con un **52% de peticiones fallidas**.
 *   **Impacto:** El servidor web tuvo que procesar y escribir en el disco (logs) todas las peticiones hasta que la regla de firewall se activó.
-
+![Resultados de Fail2Ban](resultado_fail2ban.png)
 ### B. Prueba con eBPF (XDP)
 *   **Ejecución:** Mismo ataque (300 peticiones en 15s) desde la máquina Windows.
 *   **Resultado:** Las primeras 60 peticiones pasaron. En la petición 61, el kernel destruyó el paquete. El script terminó con un **74% de peticiones fallidas** (solo 24 peticiones exitosas).
 *   **Impacto:** Nginx dejó de recibir tráfico de golpe. Los logs del contenedor se detuvieron en seco. El servidor no sufrió desgaste de CPU ni de I/O procesando el ataque.
-
+![Resultados de eBPF en Windows](resultado_windows.png)
 ## 5. Conclusión
 *   **Fail2Ban** es útil como primera línea de defensa, pero es reactivo y depende del sistema de archivos (logs). En ataques volumétricos, el servidor puede caerse antes de que Fail2Ban aplique la regla.
 *   **eBPF/XDP** es proactivo y altamente eficiente. Bloquea el ataque a nivel de red, garantizando que los recursos del servidor web se mantengan intactos y disponibles para usuarios legítimos.
